@@ -22,5 +22,5 @@ no planejamento da primeira implementação achei que seria vantajoso guardas o 
 junto com as struct foi implementado a primeira função para iniciar um bloco de 
 emoria. vale ressaltar que para simular a ALOCAÇÃO de momeria estamos usando malloc, visto que o projeto é sobre GERENCIAR a memoria.
 a função esta organizando o primeiro bloco de memoria, chamado de bloco_pai da seguinte forma:
-m![Memoria_Mapa](https://github.com/GabrielSaH/mylloc/assets/102604902/e12fc961-9075-4586-ab9a-236df4f875fa)
+![Memoria_Mapa](https://github.com/GabrielSaH/mylloc/assets/102604902/e12fc961-9075-4586-ab9a-236df4f875fa)
 
