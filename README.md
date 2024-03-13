@@ -8,19 +8,49 @@ Aqui, compartilharemos nossos pensamentos, ideias e progresso ao longo do desenv
 
 Este espaço servirá como um diário, onde documentaremos os desafios encontrados, as soluções propostas e as decisões tomadas durante o processo de desenvolvimento
 
-### Dia 0 (03/03/24)
-Primerio commit e inicio do desenvolvimento, pela necessidade dos outros grupos de usar um gerenciados de memoria o desenvolvimento e implementação foi adiantado,apos ler o relatorio da ultima implementação do gerenciamento de memoria cheguei a conclusão que a maneira mais efetiva de criar uma implementação rapida e facil era usar listas duplamente encadeadas que serviram como guia para qual parte da memoria esta disponivel. Ainda no artigo vi e entendi a necessidade de guardar metadados sobre os blocos de memoria. Por isso no primeiro estagio de desenvolvimento foram criadas as structs No, DataBlock e DoubleKeyList.
-#### No 
-é o index da lista e se constitui de um ponteiro para o proximo No, um para o anterior e um ponteio para o bloco de memoria que ele esta representando, ao longo do codigo e desse guia chamarei um No que esta gerenciando um bloco como "guia"
+### Dia 1 (03/03/24)
+Primerio commit, inicio do desenvolvimento e primeira implementação funcional. pela necessidade dos outros grupos de usar um gerenciados de memoria o desenvolvimento e implementação foi adiantado,apos ler o relatorio da ultima implementação do gerenciamento de memoria cheguei a conclusão que a maneira mais efetiva de criar uma implementação rapida e facil era usar listas duplamente encadeadas que serviram como guia para qual parte da memoria esta disponivel. Ainda no artigo vi e entendi a necessidade de guardar metadados sobre os blocos de memoria. Por isso no primeiro estagio de desenvolvimento foram criadas as structs No, DataBlock e DoubleKeyList.
 
-#### Data block
-são os metadados do bloco de memoria, neles são guardados onde o bloco começa (ou seja, o inicio da memoria DISPONIVEL para alocação), se ele esta livre e onde ele termina.
+#### Structs
+Algumas structs foram implementadas para o desenvolvimento dos gerenciamento de dados, sua implementação e sua utilidade esta detalhada a seguir.
 
-#### DoubleKeyList
+##### No 
+é o index da lista e se constitui de um ponteiro para o proximo No, um para o anterior e um ponteio para o bloco de memoria que ele esta representando, ao longo do codigo e desse guia chamarei um No que esta gerenciando um bloco como "guia". Dessa forma, a implementação esta como segue:
+No* Proximo; // Proximo No atrelado a um bloco de memoria
+No* anterior;  // O No anterior tambem atrelado a um bloco de memoria
+DataBlock* bloco;  // O bloco de memoria que esse no representa.
+
+Importante ressaltar que um No so pode existir se ele representa um bloco de memoria. dessa forma, cada no esta ligado a uma porção de memoria.
+
+##### Data block
+são os metadados do bloco de memoria, neles são guardados onde o bloco começa (ou seja, o inicio da memoria DISPONIVEL para alocação), se ele esta livre e onde ele termina. Dessa forma, a implementação esta como segue:
+void* start;  // O inicio da parte LIVRE de memoria, isso é, a parte que sera disponibilizada para o usuario.
+void* end;  // O fim da parte LIVRE da memoria, isso é, um ponteiro para o utlimo byte que o usuario podera utilizar
+int free;  // Nao existe booleano em C nativo, logo, 1 = memoria esta livre | 0 = memoria esta ocupada
+
+Ponteiros nulos são ponteiros para partes brutas de memoria que ainda nao foram tipadas, ou seja, partes da memoria que ainda nao possuem um tipo especifico 
+
+##### DoubleKeyList
 no planejamento da primeira implementação achei que seria vantajoso guardas o primeiro e o ultimo no de uma lista de blocos, porem no decorrer do dia senti que não era necessario, por isso a struct ainda nao esta sendo usada.
 
+#### Funçoes
+Aqui sera tratado quais funçoes foram implementadas no primeiro dia, para que elas servem, e como os seus algoritmos funcionam.
+
+##### void* initMemory(void* inicioMemoria);
 junto com as struct foi implementado a primeira função para iniciar um bloco de 
-emoria. vale ressaltar que para simular a ALOCAÇÃO de momeria estamos usando malloc, visto que o projeto é sobre GERENCIAR a memoria.
+emoria. vale ressaltar que para simular a ALOCAÇÃO de momeria estamos usando malloc, visto que o kernel de um sistema possui a sua disponibilidade qualque endereço, ou seja,
+quando é requisitado em um programa C normal um endereço ainda nao alocado (em outras palavras, um endereço acima da break line ou fora da stack) tera um falha de segmentação, porem, um kernel ou um OS de um computador tem acesso a qualquer parte da memoria, desse modo é necessario que aloquemos memoria para simular um ambiente de manipulação livre de memoria, outra opçao seria alocar memoria usando blocos de memoria STATIC, porem essa opção foi descartata devido ao baixo desempenho.
+
 a função esta organizando o primeiro bloco de memoria, chamado de bloco_pai da seguinte forma:
 ![Memoria_Mapa](https://github.com/GabrielSaH/mylloc/assets/102604902/e12fc961-9075-4586-ab9a-236df4f875fa)
+
+a primeira vez que o mylloc for chamado ele checara se a variavel global Bloco_pai esta pronta, caso ela nao esteja ele chamara a função initMemory, que configura o bloco pai como um bloco comum de memoria. IMPORTANTE manter em mente que o bloco pai em si é apenas um bloco de memoria assim como qualquer outro.
+
+##### void createList(void* inicioMemoria, void* blocoADR)
+é a função que configura o No que sera atrelado ao bloco de memoria, essa função nao define os vizinhos dos nos mas apenas configura o No para ser utilizado. A posição do No é bem simples, ele começa no primeiro byte da memoria bruta, assim como mostra a figura 1.
+
+##### No* buscaGuia(size_t tamanho)
+essa função é responsavel por achar o melhor bloco de memoria disponivel para o tamanho solicitado de memoria, nessa etapa do projeto estamos utilizando o metodo de BEST FIT, o BEST-FIT tem como caracteristicas melhor funcionamento quando a memoria disponivel são blocos grandes e as requisiçoes sao de blocos pequenos, oque nos acreditamos que seria o mais comum em um kernel, para mais informaçoes sobre os algoritmos é recomendado o livro [Operating Systems: Design and Implementation](https://csc-knu.github.io/sys-prog/books/Andrew%20S.%20Tanenbaum%20-%20Operating%20Systems.%20Design%20and%20Implementation.pdf) ou para uma leitura rapida [esse artigo](https://www.linkedin.com/advice/1/what-difference-between-best-fit-worst-fit-memory-ripyf)
+
+a implementação é uma busca simples, o algoritmo inicia a busca tendo o bloco pai como ponto de inicio e como No ideal, ele então percorre a lista ate que encontre um valor nullo, caso algum dos valores que o guia_atual passar for menor que o bloco bllhhhh
 
