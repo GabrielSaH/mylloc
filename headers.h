@@ -19,10 +19,4 @@ typedef struct no{
 
 } No;
 
-typedef struct doubleKeyList
-{
-    No* primeiro;
-    No* ultimo;
-
-} DoublekeyList;
 

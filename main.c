@@ -120,6 +120,12 @@ void* mymap(size_t tamanho, No* guia){
 
 };
 
+void* myPerfectmap(No* noPerfeito){
+    noPerfeito->block->free = 0;
+    
+    return noPerfeito;
+};
+
 /* Aloca memoria */
 void* mylloc(size_t tamanho){
     tamanho = tamanho + sizeof(DataBlock) + sizeof(No) + 2; 
@@ -130,6 +136,10 @@ void* mylloc(size_t tamanho){
     No* guiaIdeal = buscaGuia(tamanho);
     if (guiaIdeal == NULL){
         return NULL;
+    };
+
+    if ( guiaIdeal->block->end - (void*) guiaIdeal == tamanho){
+        return myPerfectmap(guiaIdeal);
     };
 
     return mymap(tamanho, guiaIdeal);
@@ -184,75 +194,26 @@ void printAddresList(No* posiçaoInicial){
 
 int main(){
 
-    void* myllocTeste = mylloc(500);
+    void* caraDoFinal = mylloc(500);
+    No* noPai = (void*) Bloco_Pai - sizeof(No) - 1;
 
-
-    printf("Inicio do DataBlock: %p\n", Bloco_Pai->start);
-    printf("fim do DataBlock:    %p\n", Bloco_Pai->end);
-    printf("local do DataBlock:  %p\n", Bloco_Pai);
-
-    printf("-------------------------\n");
-
-    No* teste = (void*) Bloco_Pai - sizeof(No) - 1;
-
-    printf("Proximo No:          %p\n", teste->proximo);
-    printf("Anterior No:         %p\n", teste->anterior);
-    printf("bloco:               %p\n", teste->block);
-    printf("endereço NO:         %p\n", teste);
-    printf("bloco do No Free:    %i\n", teste->block->free);
-    printf("inicio bloco:        %p\n", teste->block->start);
-
-    /* Se o codigo estiver funcionando corretamente as seguintes coisas devem ser verdade:
-    1 -> fim do data block - endereço no = 0x1000 ou 4096
-    2 -> Proximo No = NULL ou (nil)
-    3 -> Anterior No = NULL ou (nil)
-    4 -> bloco = local do data block
-    5 -> bloco do No free = 69 (o numero ainda nao faz nada mas significa que é possivel recuperar
-                                data só pelo endereço do bloco)
-    */
-
-    printf("-------------------------\n");
-
-    No* testeDois = myllocTeste - sizeof(DataBlock) - sizeof(No) - 2;
-    
-    printf("No Mylloc alocado:   %p\n", testeDois);
-    printf("mylloc data fim:     %p\n", testeDois->block->end);
-    printf("mylloc data start:   %p\n", testeDois->block->start);
-    printf("mylloc data free:    %i\n", testeDois->block->free);
-    printf("No mylloc next:      %p\n", testeDois->proximo);
-    printf("No mylloc anterior   %p\n", testeDois->anterior);
-
-    printf("-------------------------\n");
-    
-    // myfree(myllocTeste);
-
-    // printf("Proximo No:          %p\n", teste->proximo);
-    // printf("Anterior No:         %p\n", teste->anterior);
-    // printf("bloco:               %p\n", teste->block);
-    // printf("endereço NO:         %p\n", teste);
-    // printf("bloco do No Free:    %i\n", teste->block->free);
-    // printf("Final do bloco:      %p\n", teste->block->end);
-    // printf("inicio do bloco:     %p\n", teste->block->start);
 
     printf("\n###### INICIO LOOP ######\n");
 
-    // for (int i = 0; i < 10; i++){
-    //     mylloc(100);
-    // };
 
-    myfree(myllocTeste);
-
-    void* caraDoFinal = mylloc(300);
-    void* caraDoMeio = mylloc(350);
-    void* caraDoinicio = mylloc(400);
+   void* caraDoMeio2 = mylloc(300);
+   void* caraDoMeio = mylloc(350);
+   void* caraDoinicio = mylloc(400);
 
     //myfree(caraDoinicio);
     //myfree(caraDoMeio);
-    myfree(caraDoFinal);
+    //myfree(caraDoFinal);
     
-    mylloc(200);
+    myfree(caraDoFinal);
 
-    printAddresList(teste);
+    mylloc(500);
+
+    printAddresList(noPai);
 
 
     return 0;
