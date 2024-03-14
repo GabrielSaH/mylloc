@@ -52,5 +52,59 @@ a primeira vez que o mylloc for chamado ele checara se a variavel global Bloco_p
 ##### No* buscaGuia(size_t tamanho)
 essa função é responsavel por achar o melhor bloco de memoria disponivel para o tamanho solicitado de memoria, nessa etapa do projeto estamos utilizando o metodo de BEST FIT, o BEST-FIT tem como caracteristicas melhor funcionamento quando a memoria disponivel são blocos grandes e as requisiçoes sao de blocos pequenos, oque nos acreditamos que seria o mais comum em um kernel, para mais informaçoes sobre os algoritmos é recomendado o livro [Operating Systems: Design and Implementation](https://csc-knu.github.io/sys-prog/books/Andrew%20S.%20Tanenbaum%20-%20Operating%20Systems.%20Design%20and%20Implementation.pdf) ou para uma leitura rapida [esse artigo](https://www.linkedin.com/advice/1/what-difference-between-best-fit-worst-fit-memory-ripyf)
 
-a implementação é uma busca simples, o algoritmo inicia a busca tendo o bloco pai como ponto de inicio e como No ideal, ele então percorre a lista ate que encontre um valor nullo, caso algum dos valores que o guia_atual passar for menor que o bloco bllhhhh
+a implementação é uma busca simples, o algoritmo inicia a busca tendo o bloco pai como ponto de inicio e como No ideal, ele então percorre a lista ate que encontre um valor 
+nullo, caso algum dos valores que o guia_atual passar for menor que o bloco_ideal e esteja livre para alocação, esse agora passar a ser o No ideal, que é então retornado.
+
+o motivo do argumento ser do tipo size_t é porque a solicitação de memoria em C segue por padrao uma chamada da função base sizeof [ ex: malloc(sizeof(struct bla)) ] essa função por sua vez retorn uma variavel do tipo size_t, que corresponde ao tamanho em bytes da struct.
+
+##### mymap(size_t tamanho, No* guia)
+essa função é a etapa final para alocação de memoria, ela é responsavel por separar um novo bloco de memoria e configurar ele para uso. A implementção é como segue:
+primeiramente um esclaricimento, o argumento tamanho se refere ao tamanho do novo bloco de memoria, enquanto a variavel guia se refere ao No* do bloco de memoria ideal para a nova alocação.
+
+1 -> é separado duas variaveis, que é o inicio da memoria utilizavel pelo usuario e o fim da memoria utilizavel pelo usuario.
+2 -> é criada um novo bloco de metadados que é então alocado na posição inicial + o tamanho da struct No + 1 (isso porque a estrutura No deve ficar no inicio do bloco, o +1 é para que o No guia e os metadados nao colidam um com o outro).
+3 -> o bloco de metadados é configurado para uso
+4 -> é chamada a função que cria a lista.
+5 -> a lista é alocada no inicio do bloco de memoria total.
+6 -> é configurado os vizinhos do bloco dentro do No guia
+7 -> retorna um ponteiro PARA O INICIO DA MEMORIA UTILIZAVEL, OU SEJA, PARA DEPOIS DOS METADADOS
+
+
+##### void* mylloc(size_t tamanho)
+essa função serve apenas como interface de usuario, ou seja, ela nao faz nada alem de chamar as outras funçoes antes mostradas. sua unica utilidade é desviar a alocação em 2 caminhos diferentes.
+1 -> o bloco pai ainda nao foi iniciado, ao qual mylloc solicita a inicialização atraves da função initMemory, e depois solicita a alocação de memoria
+2 -> o bloco pai ja foi iniciado, ao qual mylloc apenas solicita a alocação do novo bloco.
+essa função retorna um ponteiro nullo que ja foi abordado anteriormente, mas relembrando trata-se de ponteiro para um bloco de memoria bruto cujo ainda nao foi tipado.
+
+##### void myfree(void* inicioData)
+essa é a função responsavel por desalocar memoria e permitir que ela seja redistribuida, importante ressaltar que a função nao apaga propriamente a memoria mas apenas permite que o usuario sobreescreva oque estava guardado nela. Normalmente é necessario fazer dois algoritmos, um que libera a memoria e outro que desfragmenta (a memoria fica dividida em blocos pequenos depois de multiplas alocaçoes, o processo de desfazer esses blocos pequenos e juntar eles em blocos maiores é o chamamos de desfragmentação) porem, conseguimos desenvolver um algoritmo que faz os dois ao mesmo tempo, essa é a parte mais complicada do codigo.
+existe 5 possiveis casos para desalocação de memoria
+
+1: a memoria a esquerda esta livre e a da direita não
+2: a memoria a esquerda esta livre e a da direita tambem esta livre
+3: a memoria a esquerda esta ocupada e a da direita esta ocupada
+4: a memoria a esquerda esta ocupada e a da direita esta livre
+5: a memoria a esquerda esta ocupada e a da direita tambem
+
+para resolver esses 5 problemas em um so processo foi aplicado uma sequencia de dois algoritmos, a combinação de aplicar as vezes apenas um, os dois ou nenhum é o que torna possivel fazer todos os casos em um unico processo.
+
+Processos padroes:
+antes de iniciarmos os algortimos a variavel block free é alterada para 1, esse proccesso ocorre indeendente dos algortimos a seguir.
+
+O primeiro algoritmo é o algortimo A, ele segue na seguinte forma:
+1 -> Checa se o bloco anterior existe, se não existir nao realizar nada.
+2 -> Checa se o bloco anterior esta livre, se não estiver nao realiza nada.
+3 -> O bloco anterior tem como proximo o bloco que vem depois do bloco atual
+4 -> O Final do bloco anterior passa a ser o final do bloco atual
+
+ou seja, o algoritmo A checa se o bloco anteriro esta livre, caso esteja ele "engole" o bloco atual.
+
+
+
+
+
+
+
+
+
 
