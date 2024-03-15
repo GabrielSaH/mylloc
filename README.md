@@ -104,21 +104,41 @@ Para deixar o algoritmo mais facil de entender considere que queremos liberar o 
 A-B-C-D  
 onde A,B,C estão livres e D esta ocupado.  
   
-1 -> checa se o proximo bloco existe, se não estiver nao realiza nada
-2 -> checa se o proximo bloco esta livre, se não estiver nao realiza nada
+1 -> checa se o proximo bloco existe, se não estiver nao realiza nada  
+2 -> checa se o proximo bloco esta livre, se não estiver nao realiza nada  
 OBS: as alteraçoes desse algoritmo são feitas no bloco anterior ao proximo bloco, ou seja, caso nao tenha sido executado o algoritmo A as mudanças são feitas no bloco atual
-caso tenha sido feito o algoritmo A as alteraçoes sao feitas no bloco anterior ao que se quer remover.
-3 -> configura o bloco anterior ao proximo bloco para que o seu 'proximo' seja o bloco que vem depois do proximo. [O bloco anterior ao bloco C tem como seu proximo o bloco D]
-4 -> configura o bloco anterior ao proximo bloco para que o seu fim seja no final do proximo bloco.  [O bloco anterior ao bloco C tem o seu fim marcado para o final do bloco C]
-
+caso tenha sido feito o algoritmo A as alteraçoes sao feitas no bloco anterior ao que se quer remover.  
+3 -> configura o bloco anterior ao proximo bloco para que o seu 'proximo' seja o bloco que vem depois do proximo. [O bloco anterior ao bloco C tem como seu proximo o bloco D]  
+4 -> configura o bloco anterior ao proximo bloco para que o seu fim seja no final do proximo bloco.  [O bloco anterior ao bloco C tem o seu fim marcado para o final do bloco C]  
+  
 Importante ressaltar que caso o algoritmo A tenha sido rodado o bloco C tem como seu anterior o bloco A, caso contrario o seu anterior é o bloco B mesmo.  
-o algoritmo B é responsavel por forçar o bloco seguinte do que esta sendo liberado a ser engolido pelo bloco anterior a ele (caso o proximo bloco esteja livre).
+o algoritmo B é responsavel por forçar o bloco seguinte do que esta sendo liberado a ser engolido pelo bloco anterior a ele (caso o proximo bloco esteja livre).  
 
 Com esses dois algoritmos resolvemos os 4 casos estipulados originalmente da seguinte forma. considere os blocos A-B-C-D onde queremos liberar o bloco B.  
 Caso 1: é executado o algoritmo A, que faz com que o bloco a esquerda devore o bloco a ser liberado. Resultado -> o bloco B some, A-C-D  
-Caso 2: é executado o algoritmo A, que deixa a memoria no estado A-C-D, depois é executado o algoritmo B, que faz com que o bloco A devore o bloco que vem depois do bloco B, nesse caso o bloco C, resultado final -> o bloco A engole tanto o bloco B quanto o bloco C, A-D    
+Caso 2: é executado o algoritmo A, que deixa a memoria no estado A-C-D, depois é executado o algoritmo B, que faz com que o bloco C seja devorado pelo bloco que vem antes dele, nesse caso o bloco A, resultado final -> o bloco A engole tanto o bloco B quanto o bloco C, A-D    
 caso 3: o bloco a ser liberado esta isolado, nesse caso nao ha nada mais que possamos fazer, nenhum algoritmo é executado e o bloco é configurado para bloco livre. Resultado -> A-B-C-D  
-Caso 4: é executado o algoritmo B que faz com que o bloco anterior ao Proximo (C) seja devorado pelo seu anterior, nesse caso, o bloco B. Resultado -> A-B-D  
+Caso 4: é executado o algoritmo B que faz com que o bloco anterior ao Proximo (o bloco anterior a C) devore o proximo (devore o bloco C), nesse caso, o bloco B. Resultado -> A-B-D  
+
+essas foram todas as coisas desenvolvidas no primeiro dia de desenvolvimento.
+
+#### Dia 2 (13/03/24)
+Como o desenvolvimento ja tinha alcançado um ponto de uma primeira implementação funcional o segundo dia de desenvolvimento demorou bastante, focamos o tempo entre eles em teoria e planejamento. No segundo dia resolvemos o unico bug que tinha no codigo e implementamos um função para debug. O codigo ja esta basicamente pronto desde o primeiro dia de desenvolvimento por isso a ideia é ou seguir para implementação em um kernel ou começar a estudar como adicionar memoria virtual ao codigo. Talvez os dois.
+
+##### Void* myPerfectmap(No* noPerfeito)
+o bug que tinhamos é que quando tentavamos alocar um espaço de memoria exatamente igual a um bloco livre ele encadeava a lista em circulos.  
+para resolver foi criada a função myPerfectmap, essa função apenas muda o bloco alvo para ocupado e retorna ele pronto. A função foi adicionada ao mylloc como opção caso o bloco seja do exato tamanho da alocação. 
+
+##### Void printAddresList(No* posicaoInicial)
+é um print para lista encadeada simples. funciona muito bem para debugg e é altamente recomendado implementa-la caso queira fazer o proprio alocado, ja que sem ela debuggar é bem dificil.
+
+##### Void* mylloc(size_t tamanho)
+foram feitas algumas mudanças no mylloc, principalmente refatorização. Adicionamente foi separa a chamada em mais possiveis casos incluindo agora o caso 3  
+3 -> o bloco é do tamanho exato que o usuario requisitou, nesse caso retorna o resultado da funcao myPerfectmap.
+
+
+
+
 
 
 
