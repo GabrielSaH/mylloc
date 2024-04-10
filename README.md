@@ -15,13 +15,13 @@ Primerio commit, inicio do desenvolvimento e primeira implementação funcional.
 Algumas structs foram implementadas para o desenvolvimento dos gerenciamento de dados, sua implementação e sua utilidade esta detalhada a seguir.
 
 ##### No 
-é o index da lista e se constitui de um ponteiro para o proximo No, um para o anterior e um ponteio para o bloco de memoria que ele esta representando, ao longo do codigo e desse guia chamarei um No que esta gerenciando um bloco como "guia". Dessa forma, a implementação esta como segue:
-No* Proximo:    Proximo No atrelado a um bloco de memoria
-No* anterior:     O No anterior tambem atrelado a um bloco de memoria
-DataBlock* bloco:     O bloco de memoria que esse no representa.
-
-Importante ressaltar que um No so pode existir se ele representa um bloco de memoria. dessa forma, cada no esta ligado a uma porção de memoria.
-
+é o index da lista e se constitui de um ponteiro para o proximo No, um para o anterior e um ponteio para o bloco de memoria que ele esta representando, ao longo do codigo e desse guia chamarei um No que esta gerenciando um bloco como "guia". Dessa forma, a implementação esta como segue:  
+No* Proximo:    Proximo No atrelado a um bloco de memoria  
+No* anterior:     O No anterior tambem atrelado a um bloco de memoria  
+DataBlock* bloco:     O bloco de memoria que esse no representa.  
+  
+Importante ressaltar que um No so pode existir se ele representa um bloco de memoria. dessa forma, cada no esta ligado a uma porção de memoria.  
+  
 ##### Data block
 são os metadados do bloco de memoria, neles são guardados onde o bloco começa (ou seja, o inicio da memoria DISPONIVEL para alocação), se ele esta livre e onde ele termina. Dessa forma, a implementação esta como segue:  
 void* start:  O inicio da parte LIVRE de memoria, isso é, a parte que sera disponibilizada para o usuario.  
