@@ -2,12 +2,6 @@
 
 DataBlock* Bloco_Pai = NULL;
 
-/* ----------ENV---------- */
-/* Bloco de memoria principal usado para simular o gerenciamento*/
-
-/* ----------SIMULACAO---------- */
-
-/* funcao para alocar memoria com o malloc, usada apenas para simular o ambiente */
 
 /* ------------NO GUIA------------ */
 
@@ -25,11 +19,7 @@ void createList(void* inicioMemoria, void* blocoADR){
 
 /* ------------MYLLOC------------ */
 
-/* Inicia o bloco pai, mapeando memoria para poder ser distruibuida com mylloc futuramente.
-o bloco é estruturado como segue:
-1-> No para a lista de fragmentos
-2-> Metadados do bloco de memoria
-3-> memoria livre para ser mapeada */
+
 DataBlock* initMemory(void* inicioMemoria){
     // O local dos metadados é depois do guia, por isso "+ sizeof(No) + 1" 
     // (o +1 é para nao dividirem o mesmo endereço)
@@ -111,7 +101,6 @@ void* myPerfectmap(No* noPerfeito){
     return noPerfeito;
 };
 
-/* Aloca memoria */
 void* mylloc(int tamanho){
     tamanho = tamanho + sizeof(DataBlock) + sizeof(No) + 2; 
     if (Bloco_Pai == NULL){
