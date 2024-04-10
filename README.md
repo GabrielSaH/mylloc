@@ -23,13 +23,13 @@ DataBlock* bloco;     O bloco de memoria que esse no representa.
 Importante ressaltar que um No so pode existir se ele representa um bloco de memoria. dessa forma, cada no esta ligado a uma porção de memoria.
 
 ##### Data block
-são os metadados do bloco de memoria, neles são guardados onde o bloco começa (ou seja, o inicio da memoria DISPONIVEL para alocação), se ele esta livre e onde ele termina. Dessa forma, a implementação esta como segue:
-void* start;     O inicio da parte LIVRE de memoria, isso é, a parte que sera disponibilizada para o usuario.
-void* end;     O fim da parte LIVRE da memoria, isso é, um ponteiro para o utlimo byte que o usuario podera utilizar
-int free;     Nao existe booleano em C nativo, logo, 1 = memoria esta livre | 0 = memoria esta ocupada
-
+são os metadados do bloco de memoria, neles são guardados onde o bloco começa (ou seja, o inicio da memoria DISPONIVEL para alocação), se ele esta livre e onde ele termina. Dessa forma, a implementação esta como segue:  
+void* start;     O inicio da parte LIVRE de memoria, isso é, a parte que sera disponibilizada para o usuario.  
+void* end;     O fim da parte LIVRE da memoria, isso é, um ponteiro para o utlimo byte que o usuario podera utilizar  
+int free;     Nao existe booleano em C nativo, logo, 1 = memoria esta livre | 0 = memoria esta ocupada  
+  
 Ponteiros nulos são ponteiros para partes brutas de memoria que ainda nao foram tipadas, ou seja, partes da memoria que ainda nao possuem um tipo especifico 
-
+  
 ##### DoubleKeyList
 no planejamento da primeira implementação achei que seria vantajoso guardas o primeiro e o ultimo no de uma lista de blocos, porem no decorrer do dia senti que não era necessario, por isso a struct ainda nao esta sendo usada.
 
