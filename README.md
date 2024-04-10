@@ -136,6 +136,27 @@ para resolver foi criada a função myPerfectmap, essa função apenas muda o bl
 foram feitas algumas mudanças no mylloc, principalmente refatorização. Adicionamente foi separa a chamada em mais possiveis casos incluindo agora o caso 3  
 3 -> o bloco é do tamanho exato que o usuario requisitou, nesse caso retorna o resultado da funcao myPerfectmap.
 
+#### Dia 3 (08/04/24)
+Agora que o gerenciador de memoria esta basicamente pronto foi focado em preparar ele para implementação em um kernel, para isso foi necessario remover todas as bibliotecas dos arquivos mylloc.h e mylloc.c  
+isso resultou em alguns problemas, primeiro, o NULL nao esta definido em C nativo, por isso foi necessario redefinir NULL no mylloc.h, alem disso foi necessario trocar todas as funcoes que possuiam o tipo size_t para int, ja que size_t não é definido em C nativo tambem.  
+algumas funcoes foram alteradas, elas são
+
+#### void* mylloc(int tamanho):
+essa função foi levemente alterada para que ela nao chame mais initMemory internamente, dessa forma, agora é necessario iniciar a memoria por fora do progama.  
+
+#### void* virtualMalloc(int tamanho):
+essa função foi completamente removida ja que ela necessitava de malloc, que nao esta definido no C nativo.
+
+#### void printAddresList(No* posicaoInicial):
+essa função agora foi movida para o arquivo de teste main.c, isso porque printf nao esta definido em C nativo, dessa forma é possivel seguir usando essa função que é amplamente utilizada para debugging sem prejudicar a implementação no kernel.
+
+#### main()
+a função main foi agora movida para o seu arquivo proprio, tornando o mylloc.c e mylloc.h completamente importaveis para o kernel.
+
+#### Mudanças na utilização:
+devido a ter movido a main de lugar e visando a utilização em kernel agora é necessario que a função initMemory seja chamada antes de começar a chamar mylloc, ela pede como argumento um ponteiro inicial para qual possa ser atribuido o bloco pai, em um kernel de sistema esse ponteiro sera passado diretamente, dessa forma permitindo a alocação de memoria. Ja em um ambiente de simulação tem que ser passado um malloc como argumento, ja que não é possivel atribuir ponteiros ainda nao alocados fora do kernel do sistema.
+
+
 
 
 
