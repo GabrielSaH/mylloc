@@ -159,6 +159,11 @@ devido a ter movido a main de lugar e visando a utilização em kernel agora é 
 
 
 
+### To-Do list  
+1 - preprar para poder utilizar multiplos processos na memoria ao mesmo tempo  
+2 - unir Data Block e No em uma unica struct  
+3 - implementar memoria virtual  
+4 - funcao para fazer blocos da memoria como proibidos
 
 
 
