@@ -108,7 +108,7 @@ int main(){
 
     // printVazios(Primeiro_Header);
     printOcupados(Primeiro_Header);
-    printLivres(Primeiro_Header);
+    // printLivres(Primeiro_Header);
 
     // printPonteirosTipo(Primeiro_Header);
     printPonteirosFisico(primeirofisico);
