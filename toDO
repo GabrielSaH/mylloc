@@ -1,0 +1,20 @@
+1* -> um novo sistema para criar alocaçoes de tamanho minimo, quando uma alocação muito pequena é feita ela retira de um grande bloco que esta sendo gerenciado
+provavelmente por meio de uma arvore binaria balanceada, (estou pensando em usar uma arvore vermelho-preto por facilidade)
+
+2* -> sistema de bloqueio de partes especificas a fim de poder gerenciar a memoria a nivel kernel, o input deve ser uma lista de ponteiros e tamanhos que nao podem ser violados
+
+3* -> uso de bestfit, worstfit ou firstFit a descrição do usuario
+
+4* -> simulaçao controlada de desempenho para checar a diferença entre os diferentes fits
+
+5* -> capacidade de gerenciar multiplos blocos independentes
+
+6* -> documentação completa sobre o desenvolvimento e uso da aplicação
+
+7* -> visualização grafica da diferença de desempenho entre mylloc e malloc
+
+8* -> visualizaçã grafica da diferença entre multiplos modos de fit
+
+9* -> otimizaçoes possiveis
+
+10* -> pular de uma ponte
