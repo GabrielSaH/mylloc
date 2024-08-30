@@ -38,6 +38,7 @@ void createList(void* inicioBloco, int size, int offSetLista);
 // Algoritmos do modo que o bloco de memoria livre sera escolhido
 
 // BestFit escolhe o bloco de memoria livre de menor tamanho mas que ainda é maior ou igual ao alvo
+//  Retorna o NO ou NULL_MYLLOC caso não haja memoria o suficiente
 DataBlock* bestFit(int tamanho);
 
 // Retorna o primeiro NO vazio do header EXCETO em casos onde só ha um NO vazio, nesse caso uma nova lista é alocada para o ultimo NO vazio e estes novos
