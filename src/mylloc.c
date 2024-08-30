@@ -1,46 +1,52 @@
 #include "mylloc.h"
 
-
+// Definição inicial, sera substituido logo que a função createList for executada.
 Header* Primeiro_Header = NULL_MYLLOC;
 
 void createList(void* inicioBloco, int size, int offSetLista){
     
     void* posicaoLista = inicioBloco + offSetLista;
+    
+    // Salvo no final do primeiro bloco-lista
     Primeiro_Header = posicaoLista + sizeof(DataBlock) * 10;
 
 
-    int contagem = 0;
+    int contagem = 0; // contagem de quantos blocos ja foram construidos e ocupados, para ser mais legivel começa com 0 e é incrementado a cada bloco
 
+    // Criação do bloco-lista inicial
     DataBlock* lista = posicaoLista;
     lista->anterior = NULL_MYLLOC;
     lista->proximo = NULL_MYLLOC;
     lista->proximoTipo = NULL_MYLLOC;
     lista->anteriorTipo = NULL_MYLLOC;
     lista->inicioData = posicaoLista;
-    lista->size = sizeof(DataBlock) * 10 + sizeof(Header);
-    lista->estado = 2;
+    lista->size = sizeof(DataBlock) * 10 + sizeof(Header); // O tamanho é de 10 NOs + o tamanho do header, ja que esse fica no final da lista
+    lista->estado = 2; // Estado 2 = OCUPADO
     
     contagem++;
 
+    // O bloco a direita é chamado assim por que ele é o bloco que fica logicamente a direita do bloco-lista, ele representa a memoria livre
+    // com ecessão do bloco que fica entre o offset e a lista caso esse seja > 0
     DataBlock* blocoDireita = posicaoLista + sizeof(DataBlock);
     blocoDireita->anterior = lista;
     blocoDireita->proximo = NULL_MYLLOC;
-    blocoDireita->inicioData = posicaoLista + lista->size;
-    blocoDireita->size = size - lista->size;
+    blocoDireita->inicioData = posicaoLista + lista->size; // A data inicia logo que o bloco-lista termina
+    blocoDireita->size = size - lista->size;               // O tamanho é tamanho total - bloco-lista (ele é atualizado futuramente se offset > 0) 
     blocoDireita->proximoTipo = NULL_MYLLOC;
     blocoDireita->anteriorTipo = NULL_MYLLOC;
-    blocoDireita->estado = 1;
+    blocoDireita->estado = 1;                              // Estado 1 = LIVRE
 
     lista->proximo = blocoDireita;
     
     contagem++;
 
+    // Caso haja offset é necessario criar um bloco a esquerda da lista, esse bloco é do tamanho do offset e esta livre por definição.
     if (offSetLista){
-        DataBlock* blocoEsquerda = posicaoLista + 2 * sizeof(DataBlock);
+        DataBlock* blocoEsquerda = posicaoLista + 2 * sizeof(DataBlock); // o NO ocupa a terceira posicação na lista, as outras duas ja estão ocupadas
         blocoEsquerda->anterior = NULL_MYLLOC;
         blocoEsquerda->proximo = lista;
         blocoEsquerda->inicioData = inicioBloco;
-        blocoEsquerda->size = posicaoLista - inicioBloco;
+        blocoEsquerda->size = posicaoLista - inicioBloco;                // Modo alternativo de calcula o offset
         blocoEsquerda->proximoTipo = NULL_MYLLOC;
         blocoEsquerda->anteriorTipo = blocoDireita;
         blocoEsquerda->estado = 1;
@@ -50,9 +56,10 @@ void createList(void* inicioBloco, int size, int offSetLista){
         lista->anterior = blocoEsquerda;
         
         blocoDireita->proximoTipo = blocoEsquerda;
-        blocoDireita->size = (inicioBloco + PAGE_SIZE) - (posicaoLista + lista->size); 
+        blocoDireita->size = (inicioBloco + PAGE_SIZE) - (posicaoLista + lista->size);  // Atualizando o tamanho do bloco a direita para considerar um bloco de offset
     };
 
+    // Configurando o primeiro header
     Header* head = Primeiro_Header;
     head->listaOcupados = lista;
     head->listaLivres = blocoDireita;
@@ -60,6 +67,7 @@ void createList(void* inicioBloco, int size, int offSetLista){
 
     DataBlock* anterior = NULL_MYLLOC;
 
+    // cria todos os outros blocos como blocos vazios, isso é, ainda não ha dados neles.
     for (contagem; contagem < 10; contagem++){
         DataBlock* atual = posicaoLista + contagem * sizeof(DataBlock);
         atual->anterior = NULL_MYLLOC;
@@ -73,7 +81,7 @@ void createList(void* inicioBloco, int size, int offSetLista){
             atual->anteriorTipo = anterior;
         };
 
-        anterior = atual;
+        anterior = atual; // é preciso manter um ponteiro para o bloco anterior para que mantenha-se um controle sobre suas posiçoes fisicas
     };
 
 

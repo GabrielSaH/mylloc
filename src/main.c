@@ -82,7 +82,7 @@ void printPonteirosTipo(Header* header){
 int main(){
     void* memoria_bruta = malloc(PAGE_SIZE);
 
-    int offset = 100;
+    int offset = 0;
 
     void* primeirofisico = memoria_bruta;
     if (offset)
@@ -92,12 +92,12 @@ int main(){
 
     createList(memoria_bruta, PAGE_SIZE, offset);
 
-
     void* ponteiro_1 = mylloc(100); 
     // ENTRE ESSES DOIS PONTEIROS ERA PARA FICAR A LISTA
     void* ponteiro_2 = mylloc(200);  
     void* ponteiro_3 = mylloc(400); 
-    void* ponteiro_4 = mylloc(600); 
+    void* ponteiro_4 = mylloc(600);
+
     // AQUI FICA O RESTO DO BLOCO
 
 
@@ -107,10 +107,10 @@ int main(){
     // myFree(ponteiro_4);
 
     // printVazios(Primeiro_Header);
-    printOcupados(Primeiro_Header);
+    // printOcupados(Primeiro_Header);
     // printLivres(Primeiro_Header);
 
-    // printPonteirosTipo(Primeiro_Header);
+    printPonteirosTipo(Primeiro_Header);
     printPonteirosFisico(primeirofisico);
 
     printf("\n\n");
@@ -141,20 +141,7 @@ int main(){
         primeirofisico += 10;
     }
 
+
     return 0;
 };
 
-/*
-
-Ja testei para
-101
-100
-
-ambos funcionando.
-resta ainda:
-001
-000
-
-lembrar de testar nos dois extremos do bloco de memoria.
-
-*/
