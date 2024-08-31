@@ -3,7 +3,6 @@
 
 #include "mylloc.h"
 
-
 void printNo(DataBlock* no){
 
         if (no == NULL_MYLLOC){
@@ -92,11 +91,11 @@ int main(){
 
     createList(memoria_bruta, PAGE_SIZE, offset);
 
-    void* ponteiro_1 = mylloc(100); 
+    // void* ponteiro_1 = mylloc(100); 
     // ENTRE ESSES DOIS PONTEIROS ERA PARA FICAR A LISTA
-    void* ponteiro_2 = mylloc(200);  
-    void* ponteiro_3 = mylloc(400); 
-    void* ponteiro_4 = mylloc(600);
+    // void* ponteiro_2 = mylloc(200);  
+    // void* ponteiro_3 = mylloc(400); 
+    // void* ponteiro_4 = mylloc(600);
 
     // AQUI FICA O RESTO DO BLOCO
 
@@ -106,40 +105,55 @@ int main(){
     // myFree(ponteiro_3);
     // myFree(ponteiro_4);
 
+    void* memoria_inicial = memoria_bruta + 504;
+
+    void* ponteiros[10] = {};
+    int tamanhos[10] = {};
+    int quantidade = 10;
+
+    for (int i = 0; i < 10; i++){
+        ponteiros[i] = memoria_inicial + 100 * i;
+        tamanhos[i] = 100;
+    };
+
+    
+
+    bloqueia_pontos(ponteiros, tamanhos, quantidade);
+
     // printVazios(Primeiro_Header);
     // printOcupados(Primeiro_Header);
     // printLivres(Primeiro_Header);
 
-    printPonteirosTipo(Primeiro_Header);
-    printPonteirosFisico(primeirofisico);
+    // printPonteirosTipo(Primeiro_Header);
+    // printPonteirosFisico(primeirofisico);
 
     printf("\n\n");
 
-    printf("\n\ninicio do bloco de memoria:     %p\n", memoria_bruta);
+    printf("\n\ninicio do bloco de memoria:         %p\n", memoria_bruta);
     if (offset) printf("Inicio da lista:                %p\n", memoria_bruta + offset);
     printf("Fim do bloco de memoria:            %p\n", memoria_bruta + PAGE_SIZE);
     printf("Tamanho do No:                      %li\n", sizeof(DataBlock));
     printf("tamanho Header:                     %li\n", sizeof(Header));
 
     // Só esta aqui para nao ter o warning de variavel nao utilizada, não faz absolutamente nada no codigo    
-    if (!ponteiro_1){
-        ponteiro_1 += 10;
-    }
-    if (!ponteiro_2){
-        ponteiro_2 += 10;
-    }
-    if (!ponteiro_3){
-        ponteiro_3 += 10;
-    }
-    if (!ponteiro_4){
-        ponteiro_4 += 10;
-    }
-    if (!ponteiro_header){
-        ponteiro_header += 10;
-    }
-    if (!primeirofisico){
-        primeirofisico += 10;
-    }
+    // if (!ponteiro_1){
+    //     ponteiro_1 += 10;
+    // }
+    // if (!ponteiro_2){
+    //     ponteiro_2 += 10;
+    // }
+    // if (!ponteiro_3){
+    //     ponteiro_3 += 10;
+    // }
+    // if (!ponteiro_4){
+    //     ponteiro_4 += 10;
+    // }
+    // if (!ponteiro_header){
+    //     ponteiro_header += 10;
+    // }
+    // if (!primeirofisico){
+    //     primeirofisico += 10;
+    // }
 
 
     return 0;

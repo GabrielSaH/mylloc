@@ -1,4 +1,6 @@
 #include "mylloc.h"
+#include <stdio.h>
+
 
 // Definição inicial, sera substituido logo que a função createList for executada.
 Header* Primeiro_Header = NULL_MYLLOC;
@@ -143,6 +145,67 @@ int createNewList(){
 
 }
 
+DataBlock* createNewList_Safeguard(int qnt, void* ponteiros[], int tamanhos[]){
+
+    int qntPnt = qnt;
+    if (qnt < 5) qnt = 5;
+
+    int size = qnt * sizeof(DataBlock) * 2;
+    
+    DataBlock* blocoIdeal = firstFit(size);
+
+    void* divisor = blocoIdeal->inicioData; 
+    
+    int saltos = 0;
+
+    if (! blocoIdeal){
+        return NULL_MYLLOC;
+    }
+
+    int continua = 1;
+    while (blocoIdeal){
+        for (int i = 0; i < qntPnt; i++){
+            if (divisor > ponteiros[i] && (divisor + size) < ponteiros[i]){
+                divisor = ponteiros[i] + tamanhos[i];
+                break;
+            };
+
+            if (divisor > ponteiros[i] + tamanhos[i] && divisor + size < ponteiros[i] + tamanhos[i]){
+                divisor = ponteiros[i] + tamanhos[i];
+                break;
+            };
+
+            if (i == qntPnt - 1){
+                continua = 0;
+            };
+        };
+
+        if (!continua){
+            break;
+        }
+
+        if ( !(divisor + size <= blocoIdeal->inicioData + blocoIdeal->size) ){
+            saltos++;
+            blocoIdeal = firstFit_pulos(size, saltos);
+            if (blocoIdeal){
+                divisor = blocoIdeal->inicioData;
+            };
+        }
+
+    };
+
+    if (!blocoIdeal){
+        return NULL_MYLLOC;
+    };
+
+    /*
+    NESSE PONTO A VARIAVEL blocoIdeal DEVE CONTER O BLOCO QUE A NOVA LISTA SERA COLOCADA, E A VARIAVEL divisor O PONTEIRO EXATO, CASO OS DOIS COMECEM NO MESMO
+    ENTAO SÓ CRIA A LISTA, CASO CONTRARIO AINDA TERA QUE SER SEPARADO COM O USO DA FUNÇÃO SEPARANO
+    */
+
+
+};
+
 //  BestFit escolhe o bloco de memoria livre de menor tamanho mas que ainda é maior ou igual ao alvo
 //  Retorna o NO ou NULL_MYLLOC caso não haja memoria o suficiente
 DataBlock* bestFit(int tamanho){
@@ -168,7 +231,46 @@ DataBlock* bestFit(int tamanho){
     }
 
     return ideal;
+};
+
+DataBlock* firstFit(int tamanho){
+    DataBlock* atual = Primeiro_Header->listaLivres;
+
+    while (atual){
+        if (atual->size >= tamanho){
+            
+            if (atual->size == tamanho){
+                perfectFit(atual);
+            }
+
+            return atual;
+        };
+
+        atual = atual->proximoTipo;
+    }
+
+    return NULL_MYLLOC;
 }
+
+DataBlock* firstFit_pulos(int tamanho, int pulos){
+    DataBlock* atual = Primeiro_Header->listaLivres;
+    int pulosDados = 0;
+
+    while (atual){
+        if (atual->size >= tamanho){
+            if (pulosDados == pulos){
+                return atual;
+            }
+            
+            pulosDados++;
+        };
+
+        atual = atual->proximoTipo;
+    }
+
+    return NULL_MYLLOC;
+
+};
 
 //  Retorna o primeiro NO da lista de NOs vazios do header
 //  Caso só haja um NO vazio criara outro bloco-lista por meio da função createNewList() e então retornara o primeiro bloco vazio da nova lista
@@ -177,7 +279,14 @@ DataBlock* getNoVazio(){
         if (!createNewList())
             return NULL_MYLLOC;
     };
-    return Primeiro_Header->listaVazios;
+
+    DataBlock* ret = Primeiro_Header->listaVazios;
+
+
+    Primeiro_Header->listaVazios = Primeiro_Header->listaVazios->proximoTipo;   //  Atualiza o cabeça da lista de NOs vazios
+    Primeiro_Header->listaVazios->anteriorTipo = NULL_MYLLOC;
+
+    return ret;
 }
 
 //  Prepara um bloco vazio para ser ocupado por um novo conjunto de dados, removendo ele da lista de vazios e o colocando na lista de ocupados
@@ -242,9 +351,6 @@ void* mylloc(int size){
     }
 
     DataBlock* blocoVazio = getNoVazio();
-
-    Primeiro_Header->listaVazios = Primeiro_Header->listaVazios->proximoTipo;   //  Atualiza o cabeça da lista de NOs vazios
-    Primeiro_Header->listaVazios->anteriorTipo = NULL_MYLLOC;
 
     configuraBlocoVazio(blocoVazio, blocoIdeal, size);
 
@@ -459,7 +565,7 @@ void* myFree(void* inicioData){
             }
 
 
-            resetProximo = 1;                               //  Agora que o noAlvo ficou com o proximo resetamos ele, ainda não podemos reseta-lo por causa da etapa C
+            resetProximo = 1;                               //  Agora que o noAlvo ficou com o proximo resetamos ele, ainda não podemos reseta-lo por causa da parte C
         }
     }
 
@@ -482,5 +588,110 @@ void* myFree(void* inicioData){
 
     return noAlvo;
 
+};
+
+// Retorna o NO que representa o bloco de memoria que contem o ponteiro requisitado, retorna NULL caso não ache ou caso o ponteiro esteja dividido entre 2 blocos
+DataBlock* acha_ponto(void* local, int size){
+    DataBlock* pivo = Primeiro_Header->listaLivres;
+
+    //  Busca linear entre os blocos livres
+    while (pivo != NULL_MYLLOC){
+        if ( (pivo->inicioData <= local) && (pivo->inicioData + pivo->size >= local + size) ){ // caso o ponteiro esteja entre um bloco de memoria
+            return pivo;
+        };
+
+        pivo = pivo->proximoTipo;
+    }
+
+    return NULL_MYLLOC;
 }
+
+
+// Marca um ponteiro como um bloco proprio marcado como ocupado
+void bloqueia_ponto(void* local, int size){
+    DataBlock* alvo = acha_ponto(local, size);
+    
+    if (!alvo){
+        return NULL_MYLLOC;
+    };
+
+    if (alvo->inicioData == local && alvo->inicioData + alvo->size == local + size){
+        perfectFit(alvo);
+        return;
+    };
+
+    
+    if (alvo->inicioData == local){
+        separa_NO(alvo, local + size);
+        perfectFit(alvo);
+        return;
+    };
+
+    DataBlock* meio = separa_NO(alvo, local);
+    
+    if (meio->inicioData + meio->size == local + size){
+        perfectFit(meio);
+        return;
+    }
+
+    void* divisor = local + size;
+    
+    DataBlock* direita = separa_NO(meio, local + size);
+
+    perfectFit(meio);
+
+    return;
+
+};
+
+
+DataBlock* separa_NO(DataBlock* alvo, void* separador){
+    DataBlock* novo = getNoVazio();
+    int size = (alvo->inicioData + alvo->size) - separador;
+
+    novo->inicioData = separador;
+    novo->size = size;
+    novo->estado = alvo->estado;
+    novo->anterior = alvo;
+    novo->proximo = alvo->proximo;
+    novo->anteriorTipo = alvo;
+    novo->proximoTipo = alvo->proximoTipo;
+
+    if (novo->proximo){
+        novo->proximo->anterior = novo;
+    };
+
+    if (novo->proximoTipo){
+        novo->proximoTipo->anteriorTipo = novo;
+    }
+
+    alvo->proximo = novo;
+    alvo->proximoTipo = novo;
+    alvo->size -= size;
+
+    return novo;
+
+};
+
+void bloqueia_pontos(void* ponteiros[], int tamanhos[], int quantidade){
+
+    DataBlock* pivo = Primeiro_Header->listaVazios;
+    int count = 0;
+    while (pivo){
+        count++;
+        pivo = pivo->proximoTipo;
+    }    
+    
+    if ( (quantidade * 2) > count){
+        createNewListLoop(quantidade * 2);
+    }
+
+    for (int i = 0; i < quantidade; i++){
+        bloqueia_ponto(ponteiros[i], tamanhos[i]);
+    };
+
+    return;
+}
+
+
 

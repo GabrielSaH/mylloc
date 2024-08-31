@@ -52,3 +52,15 @@ void* mylloc(int size);
 // O bloco enviado é dado como livre, ele não sera apagado mas sim liberado para que possa ser sobre-escrito, o usuario não tem controle sobre quando
 // um bloco é sobre-escrito ou não
 void* myFree(void*);
+
+// Retorna o NO que representa o bloco de memoria que contem o ponteiro requisitado, retorna NULL caso não ache ou caso o ponteiro esteja dividido entre 2 blocos
+DataBlock* acha_ponto(void* local, int size);
+
+// Marca um ponteiro como um bloco proprio marcado como ocupado
+void bloqueia_ponto(void* local, int size);
+
+DataBlock* separa_NO(DataBlock* alvo, void* separador);
+
+void bloqueia_pontos(void* ponteiros[], int tamanhos[], int quantidade);
+
+int createNewListLoop_Safeguard(int qnt, void* ponteiros[], int tamanhos[]);
