@@ -19,6 +19,7 @@ typedef struct header{
    struct dataBlock* listaOcupados;
    struct dataBlock* listaLivres;
    struct dataBlock* listaVazios;
+   int finder;
 } Header;
 
 // <---------------- Globals ---------------->
@@ -70,4 +71,8 @@ DataBlock* firstFit(int tamanho);
 DataBlock* firstFit_pulos(int tamanho, int pulos);
 
 DataBlock* createNewList_atBlock(DataBlock* bloco, int tamanho);
+
+void change_finder(char finder[]);
+
+DataBlock* searchBlock(int size);
 

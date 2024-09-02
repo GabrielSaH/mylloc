@@ -65,7 +65,8 @@ void createList(void* inicioBloco, int size, int offSetLista){
     Header* head = Primeiro_Header;
     head->listaOcupados = lista;
     head->listaLivres = blocoDireita;
-    head->listaVazios = posicaoLista + contagem * sizeof(DataBlock); 
+    head->listaVazios = posicaoLista + contagem * sizeof(DataBlock);
+    head->finder = 1;
 
     DataBlock* anterior = NULL_MYLLOC;
 
@@ -98,9 +99,12 @@ int createNewList(){
     //  No codigo generico é mais pratico ter a sua função separada.
 
     int size = sizeof(DataBlock) * 10;          // O tamanho do novo bloco é de 10 NOs, ja que ele não necessita de um novo header.
-    DataBlock* blocoIdeal = bestFit(size);      // Pulando etapas e realizando a chamada do bestfit manualmente
+    DataBlock* blocoIdeal = searchBlock(size);  // selecionando o bloco livre
     if (blocoIdeal == NULL_MYLLOC){
         return NULL_MYLLOC;                     // Não ha mais espaço na memoria
+    }
+    if (blocoIdeal->size == size){
+        perfectFit(blocoIdeal);                 // Configurações especiais para caso ambos os tamanhos sejam iguais
     }
 
     DataBlock* blocoVazio = Primeiro_Header->listaVazios;   // Seleciona manualmente o ultimo bloco livre do header
@@ -239,12 +243,25 @@ DataBlock* createNewList_atBlock(DataBlock* bloco, int tamanho){
     return blocoVazio;
 }
 
+DataBlock* searchBlock(int size){
+    switch (Primeiro_Header->finder){
+        case 1:
+            return( bestFit(size) );
+
+        case 2:
+            return( firstFit(size) );
+
+        case 3:
+            return( worstFit(size) );
+
+    };
+}
+
 //  BestFit escolhe o bloco de memoria livre de menor tamanho mas que ainda é maior ou igual ao alvo
 //  Retorna o NO ou NULL_MYLLOC caso não haja memoria o suficiente
 DataBlock* bestFit(int tamanho){
     
     DataBlock* atual = Primeiro_Header->listaLivres;
-    DataBlock* anterior = NULL_MYLLOC;
 
     DataBlock* ideal = NULL_MYLLOC;
 
@@ -254,14 +271,9 @@ DataBlock* bestFit(int tamanho){
             ideal = atual;
         };
 
-        anterior = atual;
+
         atual = atual->proximoTipo;
     };
-
-    // Caso o bloco seja do exato mesmo tamanho do alvo então um tratamento especial é necessario, chamda de perfectFit
-    if (ideal->size == tamanho){
-        perfectFit(ideal);
-    }
 
     return ideal;
 };
@@ -271,11 +283,6 @@ DataBlock* firstFit(int tamanho){
 
     while (atual){
         if (atual->size >= tamanho){
-            
-            if (atual->size == tamanho){
-                perfectFit(atual);
-            }
-
             return atual;
         };
 
@@ -291,7 +298,7 @@ DataBlock* firstFit_pulos(int tamanho, int pulos){
 
     while (atual){
         if (atual->size >= tamanho){
-            if (pulosDados == pulos){
+            if (pulosDados >= pulos){
                 return atual;
             }
             
@@ -305,6 +312,22 @@ DataBlock* firstFit_pulos(int tamanho, int pulos){
 
 };
 
+DataBlock* worstFit(int tamanho){
+    
+    DataBlock* atual = Primeiro_Header->listaLivres;
+    DataBlock* ideal = NULL_MYLLOC;
+
+    //  Percorre linearmente a lista de blocos vazios
+    while(atual != NULL_MYLLOC){
+        if (atual->size >= tamanho && (ideal == NULL_MYLLOC || atual->size > ideal->size)){
+            ideal = atual;
+        };
+
+        atual = atual->proximoTipo;
+    };
+
+    return ideal;
+}
 //  Retorna o primeiro NO da lista de NOs vazios do header
 //  Caso só haja um NO vazio criara outro bloco-lista por meio da função createNewList() e então retornara o primeiro bloco vazio da nova lista
 DataBlock* getNoVazio(){
@@ -358,16 +381,6 @@ void perfectFit(DataBlock* ideal){
 
     retira_lista(ideal);
 
-    // if (anterior == NULL_MYLLOC){
-    //     Primeiro_Header->listaLivres = ideal->proximoTipo;  //  Caso o bloco livre seja a cabeça da lista transforma o proximo na nova cabeça
-    // }
-    // else{
-    //     anterior->proximoTipo = ideal->proximoTipo;         //  Caso contrario força a lista a pular o bloco livre, excluindo-o da lista
-    //     if (ideal->proximoTipo){                            
-    //         ideal->proximoTipo->anteriorTipo = anterior;    //  Os if impedem falha de segmentação por não existir blocos vizinhos
-    //     }
-    // }
-
     ideal->estado = 2;
     ideal->proximoTipo = Primeiro_Header->listaOcupados;    //  O proximo bloco do tipo agora é o primeiro da lista de ocupados
     ideal->proximoTipo->anteriorTipo = ideal; 
@@ -384,13 +397,14 @@ void* mylloc(int size){
         return NULL_MYLLOC;
     }
 
-
-    DataBlock* blocoIdeal = bestFit(size);
+    DataBlock* blocoIdeal = searchBlock(size);
+    
     if (blocoIdeal == NULL_MYLLOC){         //  Caso não haja memoria disponivel returna um ponteior NULL
         return NULL_MYLLOC;
     }
 
-    if (blocoIdeal->size == size){          //  Caso o bloco seja do tamanho perfeito a função perfectFit ja o preparou completamente
+    if (blocoIdeal->size == size){          //  Caso o bloco seja do tamanho perfeito a função perfectFit ja o prepara completamente
+        perfectFit(blocoIdeal);
         return blocoIdeal->inicioData;      //  Tornando um early return possivel
     }
 
@@ -521,7 +535,7 @@ void* myFree_laterais_livres(DataBlock* noAlvo){
 
 //  Nesse ponto ambos os blocos da direita e da esquerda devem estar fora da lista de livres embora ainda tenham um ponteiro para seus antigos
 //  Vizinhos, só resta então atualizar os blocos FISICAMENTE e fazer com que o bloco a esquerda (anterior) assuma o tamanho dos 3 blocos
-//  Nesse ponto o topo da lista de blocos livres é um bloco vazio OU NULL caso os 2 blocos adjacentes fossem os unicos livres
+//  Nesse ponto o topo da lista de blocos livres é um bloco livre OU NULL caso os 2 blocos adjacentes fossem os unicos livres
 
     anterior->proximo = proximo->proximo;       //  O proximo do anterior agora é o proximo do bloco a direita, visto que o anterior "Engoliu" os 3 blocos
 
@@ -774,15 +788,20 @@ void bloqueia_pontos(void* ponteiros[], int tamanhos[], int quantidade){
     return;
 }
 
+void change_finder(char finder[]){
+    if (finder == 'best'){
+        Primeiro_Header->finder = 1;
+        return;
+    };
 
-/*
-Endereço do NO:      0x579009dada30
-inicio do Datablock: (nil)
-fim do data block:   (nil)
-Tamanho da memoria:  0
-proximo No:          (nil)
-No anterior:         (nil)
-Proximo No do tipo:  0x579009dada60
-Anterior No do tipo: (nil)
-Estado Do No:        0
-*/
+    if (finder == 'first'){
+        Primeiro_Header->finder = 2;
+        return;
+    };
+
+    if (finder == 'worst'){
+        Primeiro_Header->finder = 3;
+        return;
+    };
+
+}

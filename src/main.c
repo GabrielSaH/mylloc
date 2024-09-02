@@ -120,16 +120,14 @@ int main(){
     };
 
 
-
-
-    bloqueia_pontos(ponteiros, tamanhos, quantidade);
+    // bloqueia_pontos(ponteiros, tamanhos, quantidade);
 
     // printVazios(Primeiro_Header);
     // printOcupados(Primeiro_Header);
     // printLivres(Primeiro_Header);
 
-    printPonteirosTipo(Primeiro_Header);
-    printPonteirosFisico(primeirofisico);
+    // printPonteirosTipo(Primeiro_Header);
+    // printPonteirosFisico(primeirofisico);
 
     printf("\n\n");
 
@@ -138,27 +136,6 @@ int main(){
     printf("Fim do bloco de memoria:            %p\n", memoria_bruta + PAGE_SIZE);
     printf("Tamanho do No:                      %li\n", sizeof(DataBlock));
     printf("tamanho Header:                     %li\n", sizeof(Header));
-
-    // Só esta aqui para nao ter o warning de variavel nao utilizada, não faz absolutamente nada no codigo    
-    // if (!ponteiro_1){
-    //     ponteiro_1 += 10;
-    // }
-    // if (!ponteiro_2){
-    //     ponteiro_2 += 10;
-    // }
-    // if (!ponteiro_3){
-    //     ponteiro_3 += 10;
-    // }
-    // if (!ponteiro_4){
-    //     ponteiro_4 += 10;
-    // }
-    // if (!ponteiro_header){
-    //     ponteiro_header += 10;
-    // }
-    // if (!primeirofisico){
-    //     primeirofisico += 10;
-    // }
-
 
     return 0;
 };
