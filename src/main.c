@@ -91,6 +91,7 @@ int main(){
 
     createList(memoria_bruta, PAGE_SIZE, offset);
 
+
     // void* ponteiro_1 = mylloc(100); 
     // ENTRE ESSES DOIS PONTEIROS ERA PARA FICAR A LISTA
     // void* ponteiro_2 = mylloc(200);  
@@ -114,9 +115,12 @@ int main(){
     for (int i = 0; i < 10; i++){
         ponteiros[i] = memoria_inicial + 100 * i;
         tamanhos[i] = 100;
+        
+        printf("%p -> %p\n", ponteiros[i], ponteiros[i] + tamanhos[i]);
     };
 
-    
+
+
 
     bloqueia_pontos(ponteiros, tamanhos, quantidade);
 
@@ -124,8 +128,8 @@ int main(){
     // printOcupados(Primeiro_Header);
     // printLivres(Primeiro_Header);
 
-    // printPonteirosTipo(Primeiro_Header);
-    // printPonteirosFisico(primeirofisico);
+    printPonteirosTipo(Primeiro_Header);
+    printPonteirosFisico(primeirofisico);
 
     printf("\n\n");
 

@@ -57,10 +57,17 @@ void* myFree(void*);
 DataBlock* acha_ponto(void* local, int size);
 
 // Marca um ponteiro como um bloco proprio marcado como ocupado
-void bloqueia_ponto(void* local, int size);
+int bloqueia_ponto(void* local, int size);
 
 DataBlock* separa_NO(DataBlock* alvo, void* separador);
 
 void bloqueia_pontos(void* ponteiros[], int tamanhos[], int quantidade);
 
-int createNewListLoop_Safeguard(int qnt, void* ponteiros[], int tamanhos[]);
+DataBlock* createNewList_Safeguard(int qnt, void* ponteiros[], int tamanhos[], DataBlock** retPointer);
+
+DataBlock* firstFit(int tamanho);
+
+DataBlock* firstFit_pulos(int tamanho, int pulos);
+
+DataBlock* createNewList_atBlock(DataBlock* bloco, int tamanho);
+

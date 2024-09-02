@@ -1,7 +1,8 @@
-1* -> um novo sistema para criar alocaçoes de tamanho minimo, quando uma alocação muito pequena é feita ela retira de um grande bloco que esta sendo gerenciado
-provavelmente por meio de uma arvore binaria balanceada, (estou pensando em usar uma arvore vermelho-preto por facilidade)
+1* -> FEITO (sistema de bloqueio de partes especificas a fim de poder gerenciar a memoria a nivel kernel, o input deve ser uma lista de ponteiros e tamanhos que nao 
+podem ser violados) KRL ESSA PORRA DEU MUITO TRABALHO COMO QUE PODE UMA COISA DESSAS
 
-2* -> sistema de bloqueio de partes especificas a fim de poder gerenciar a memoria a nivel kernel, o input deve ser uma lista de ponteiros e tamanhos que nao podem ser violados
+2* -> um novo sistema para criar alocaçoes de tamanho minimo, quando uma alocação muito pequena é feita ela retira de um grande bloco que esta sendo gerenciado
+provavelmente por meio de uma arvore binaria balanceada, (estou pensando em usar uma arvore vermelho-preto por facilidade)
 
 3* -> uso de bestfit, worstfit ou firstFit a descrição do usuario
 
