@@ -106,28 +106,26 @@ int main(){
     // myFree(ponteiro_3);
     // myFree(ponteiro_4);
 
-    void* memoria_inicial = memoria_bruta + 504;
+    // void* memoria_inicial = memoria_bruta + 504;
 
-    void* ponteiros[10] = {};
-    int tamanhos[10] = {};
-    int quantidade = 10;
+    // void* ponteiros[10] = {};
+    // int tamanhos[10] = {};
+    // int quantidade = 10;
 
-    for (int i = 0; i < 10; i++){
-        ponteiros[i] = memoria_inicial + 100 * i;
-        tamanhos[i] = 100;
+    // for (int i = 0; i < 10; i++){
+    //     ponteiros[i] = memoria_inicial + 100 * i;
+    //     tamanhos[i] = 100;
         
-        printf("%p -> %p\n", ponteiros[i], ponteiros[i] + tamanhos[i]);
-    };
+    //     printf("%p -> %p\n", ponteiros[i], ponteiros[i] + tamanhos[i]);
+    // };
 
 
     // bloqueia_pontos(ponteiros, tamanhos, quantidade);
 
-    // printVazios(Primeiro_Header);
-    // printOcupados(Primeiro_Header);
-    // printLivres(Primeiro_Header);
+    printOcupados(Primeiro_Header);
+    printLivres(Primeiro_Header);
+    printVazios(Primeiro_Header);
 
-    // printPonteirosTipo(Primeiro_Header);
-    // printPonteirosFisico(primeirofisico);
 
     printf("\n\n");
 

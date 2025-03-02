@@ -10,7 +10,7 @@ void createList(void* inicioBloco, int size, int offSetLista){
     void* posicaoLista = inicioBloco + offSetLista;
     
     // Salvo no final do primeiro bloco-lista
-    Primeiro_Header = posicaoLista + sizeof(DataBlock) * 10;
+    Primeiro_Header = posicaoLista + sizeof(DataBlock) * BLOCK_NUMBER;
 
 
     int contagem = 0; // contagem de quantos blocos ja foram construidos e ocupados, para ser mais legivel começa com 0 e é incrementado a cada bloco
@@ -22,7 +22,7 @@ void createList(void* inicioBloco, int size, int offSetLista){
     lista->proximoTipo = NULL_MYLLOC;
     lista->anteriorTipo = NULL_MYLLOC;
     lista->inicioData = posicaoLista;
-    lista->size = sizeof(DataBlock) * 10 + sizeof(Header); // O tamanho é de 10 NOs + o tamanho do header, ja que esse fica no final da lista
+    lista->size = sizeof(DataBlock) * BLOCK_NUMBER + sizeof(Header); // O tamanho é de BLOCK_NUMBER NOs + o tamanho do header, ja que esse fica no final da lista
     lista->estado = 2; // Estado 2 = OCUPADO
     
     contagem++;
@@ -71,7 +71,7 @@ void createList(void* inicioBloco, int size, int offSetLista){
     DataBlock* anterior = NULL_MYLLOC;
 
     // cria todos os outros blocos como blocos vazios, isso é, ainda não ha dados neles.
-    for (contagem; contagem < 10; contagem++){
+    for (contagem; contagem < BLOCK_NUMBER; contagem++){
         DataBlock* atual = posicaoLista + contagem * sizeof(DataBlock);
         atual->anterior = NULL_MYLLOC;
         atual->proximo = NULL_MYLLOC;
@@ -91,14 +91,14 @@ void createList(void* inicioBloco, int size, int offSetLista){
 }
 
 
-//  Cria um novo bloco-lista com novos 10 NOs para serem utilizados
+//  Cria um novo bloco-lista com novos BLOCK_NUMBER NOs para serem utilizados
 //  Retorna 1 em caso de sucesso ou 0 caso não haja mais memoria disponivel
 int createNewList(){
     //  Para criar um novo bloco-lista precisamos primeiro alocar a um NO que representara o novo bloco-lista no bloco-lista anterior
     //  Dessa forma o gerenciado sabera que essa parte esta alocada, como a criação desse novo bloco necessita de varias excessoes
     //  No codigo generico é mais pratico ter a sua função separada.
 
-    int size = sizeof(DataBlock) * 10;          // O tamanho do novo bloco é de 10 NOs, ja que ele não necessita de um novo header.
+    int size = sizeof(DataBlock) * BLOCK_NUMBER;          // O tamanho do novo bloco é de BLOCK_NUMBER NOs, ja que ele não necessita de um novo header.
     DataBlock* blocoIdeal = searchBlock(size);  // selecionando o bloco livre
     if (blocoIdeal == NULL_MYLLOC){
         return NULL_MYLLOC;                     // Não ha mais espaço na memoria
@@ -119,7 +119,7 @@ int createNewList(){
     DataBlock* anterior = NULL_MYLLOC;
     void* posicaoLista = blocoVazio->inicioData;
 
-    for (int contagem = 0; contagem < 10; contagem++){
+    for (int contagem = 0; contagem < BLOCK_NUMBER; contagem++){
         DataBlock* atual = posicaoLista + contagem * sizeof(DataBlock);
         atual->anterior = NULL_MYLLOC;
         atual->proximo = NULL_MYLLOC;
@@ -142,7 +142,18 @@ int createNewList(){
 
 }
 
+
+//  Cria um novo bloco-lista, essa função só é chamada caso acabe os blocos livre ENQUANTO o gerenciador esta bloqueando uma lista
+//  de ponteiros, passando os dados dos pontos bloqueados ela criara uma nova lista de blocos vazios em um lugar seguro
+//  Retorna nullo caso não haja espaço compativel
+//  Após bloquear os ponteiros o espaço não utilizado na lista sera liberado.
+// 
+//  o ponteiro de ponteiro retPointer ira receber um ponteiro apontando para a antiga lista de blocos vazios
 DataBlock* createNewList_Safeguard(int qnt, void* ponteiros[], int tamanhos[], DataBlock** retPointer){
+
+    //  A primeira etapa é definir quantos blocos vazios serão necessarios, cada separação de bloco
+    //  precisa de no maximo 2 blocos vazios, por isso 2 blocos vazios são separados por ponteiro
+    //  (ou seja, por separação)
 
     int qntPnt = qnt;
     if (qnt < 5) qnt = 5;
@@ -150,6 +161,8 @@ DataBlock* createNewList_Safeguard(int qnt, void* ponteiros[], int tamanhos[], D
     qnt = qnt * 2;
     int size = qnt * sizeof(DataBlock);
     
+    //  o firstFit pode retornar um bloco que contenha os locais reservados
+    //  por isso é necessario fazer uma separação 
     DataBlock* blocoIdeal = firstFit(size);
 
     void* divisor = blocoIdeal->inicioData; 
@@ -161,27 +174,39 @@ DataBlock* createNewList_Safeguard(int qnt, void* ponteiros[], int tamanhos[], D
     }
 
     int continua = 1;
+    
+    // procurando um espaço no bloco que tenha espaço suficiente e não contenha nenhum ponteiro que sera bloqueado
     while (blocoIdeal){
         for (int i = 0; i < qntPnt; i++){
+
+            //  Caso haja algum ponteiro que comece depois do inicio do bloco e esteja incluido
+            //  no bloco alvo
             if (divisor < ponteiros[i] && (divisor + size) > ponteiros[i]){
                 divisor = ponteiros[i] + tamanhos[i];
                 break;
             };
 
+
+            //  caso haja algum ponteiro que começa antes do bloco alvo e esteja incluindo no
+            //  bloco alvo
             if (divisor < ponteiros[i] + tamanhos[i] && divisor + size > ponteiros[i] + tamanhos[i]){
                 divisor = ponteiros[i] + tamanhos[i];
                 break;
             };
 
+            //  só acionara a flag continua na ultima interação do for loop
             if (i == qntPnt - 1){
                 continua = 0;
             };
         };
 
+        //  Sai do while pois o local ideal ja foi encontrado
         if (!continua){
             break;
         }
 
+        //  o local ideal ainda não foi encontrado, logo é necessario que um outro bloco seja selecionado
+        //  caso fosse usado o first fit ele escolheria o mesmo bloco então temos que ignorar os blocos ja examinados
         if ( !(divisor + size <= blocoIdeal->inicioData + blocoIdeal->size) ){
             saltos++;
             blocoIdeal = firstFit_pulos(size, saltos);
@@ -192,20 +217,29 @@ DataBlock* createNewList_Safeguard(int qnt, void* ponteiros[], int tamanhos[], D
 
     };
 
+    //  Após os while duas opções são possiveis, um bloco foi selecionado e nesse bloco a um ponteiro "divisor"
+    //  que mostra que nenhum ponteiro bloqueado esta reservando aquele local
+
     if (!blocoIdeal){
         return NULL_MYLLOC;
     };
 
+    
+    //  Separa o bloco ideal no divisor, sendo assim, o bloco antes do divisor pode ser liberado para uso no futuro
+    //  e o bloco após o divisor sera usado para alocar os blocos vazios
     if ( divisor != blocoIdeal->inicioData){
         blocoIdeal = separa_NO(blocoIdeal, divisor);
     };
 
+    //  para poder liberar os blocos no futuro não podemos usar os blocos livres disponiveis anteriormente
     *retPointer = Primeiro_Header->listaVazios->proximoTipo;
 
     return createNewList_atBlock(blocoIdeal, qnt);
 
 };
 
+// Cria uma nova lista que comporta "tamanho" blocos no endereco "bloco", alem disso é MUITO importante sabe que essa função
+// SUBSTIUI os blocos livre no header, dessa forma se ja ouver outros blocos livres eles serão perdidos
 DataBlock* createNewList_atBlock(DataBlock* bloco, int tamanho){
     int size = tamanho * sizeof(DataBlock);
     
@@ -238,7 +272,7 @@ DataBlock* createNewList_atBlock(DataBlock* bloco, int tamanho){
 
     // <------------------------------------------------------------------------>
 
-    Primeiro_Header->listaVazios = blocoVazio->inicioData;      // O header agora aponta para os novos blocos vazios da nova lista.
+    Primeiro_Header->listaVazios = blocoVazio->inicioData;      // o header agora aponta para os novos blocos vazios da nova lista.
 
     return blocoVazio;
 }
@@ -278,6 +312,8 @@ DataBlock* bestFit(int tamanho){
     return ideal;
 };
 
+//  FirstFit escolhe o primeiro bloco de memoria livre de tamanho maior do que o alvo
+//  Retorna NULL_MYLLOC caso não haja memoria o suficiente
 DataBlock* firstFit(int tamanho){
     DataBlock* atual = Primeiro_Header->listaLivres;
 
@@ -292,6 +328,9 @@ DataBlock* firstFit(int tamanho){
     return NULL_MYLLOC;
 }
 
+//  realiza o firstfit POREM ignorando os "pulos" primeiros blocos
+//  Pulando eles
+//  Retorna NULL_MYLLOC caso não haja memoria o suficiente
 DataBlock* firstFit_pulos(int tamanho, int pulos){
     DataBlock* atual = Primeiro_Header->listaLivres;
     int pulosDados = 0;
@@ -312,6 +351,8 @@ DataBlock* firstFit_pulos(int tamanho, int pulos){
 
 };
 
+//  WorstFit percorre a lista e retorna o bloco livre de maior tamanho
+//  Retorna NULL_MYLLOC caso não haja memoria o suficiente
 DataBlock* worstFit(int tamanho){
     
     DataBlock* atual = Primeiro_Header->listaLivres;
@@ -331,11 +372,6 @@ DataBlock* worstFit(int tamanho){
 //  Retorna o primeiro NO da lista de NOs vazios do header
 //  Caso só haja um NO vazio criara outro bloco-lista por meio da função createNewList() e então retornara o primeiro bloco vazio da nova lista
 DataBlock* getNoVazio(){
-    if (! Primeiro_Header->listaVazios->proximoTipo){
-        if (!createNewList())
-            return NULL_MYLLOC;
-    };
-
     DataBlock* ret = Primeiro_Header->listaVazios;
 
 
@@ -344,6 +380,16 @@ DataBlock* getNoVazio(){
 
     return ret;
 }
+
+
+//  Checa se ha mais de um bloco vazio, caso contrario cria uma nova lista com novos blocos vazios
+//  Retorna 0 se não estiver espaço vazio para uma nova lista
+int checaVazios(){
+    if (! Primeiro_Header->listaVazios->proximoTipo){
+        return createNewList();
+    };
+
+};
 
 //  Prepara um bloco vazio para ser ocupado por um novo conjunto de dados, removendo ele da lista de vazios e o colocando na lista de ocupados
 //  tambem prepara o bloco e o deixa ja configurado na lista de ocupado, não retorna nada.
@@ -409,6 +455,10 @@ void* mylloc(int size){
     }
 
     DataBlock* blocoVazio = getNoVazio();
+
+    if (! checaVazios()){                   //  Checa para ver se tem mais de um bloco livre, caso cnotrario cria uma nova lista
+        return 0;
+    };
 
     configuraBlocoVazio(blocoVazio, blocoIdeal, size);
 
@@ -676,9 +726,15 @@ DataBlock* getNo_from_livres(void* local, int size){
 }
 
 int cont = 0;
-// Marca um ponteiro como um bloco proprio marcado como ocupado
+// torna um ponteiro um bloco proprio marcado como ocupado
 // Retorna a quantidade de blocos vazios que utilizou ou -1 caso nao tenha achado o ponto alvo
-int bloqueia_ponto(void* local, int size){
+int bloqueia_ponto_AUX(void* local, int size){
+    
+    if (local == NULL_MYLLOC || size <= 0){
+        return -1;
+    };
+    
+    // seleciona um bloco da lista de blocos livre
     DataBlock* alvo = getNo_from_livres(local, size);
     
     int qnt_blocosVazios_usados = 0;
@@ -687,12 +743,13 @@ int bloqueia_ponto(void* local, int size){
         return -1;
     };
 
+    //  Caso o ponteiro seja exatamente o bloco livre inteiro
     if (alvo->inicioData == local && alvo->inicioData + alvo->size == local + size){
         perfectFit(alvo);
         return 0;
     };
 
-    
+    //  Caso o ponteiro esteja no inicio do bloco separa o bloco em dois
     if (alvo->inicioData == local){
         separa_NO(alvo, local + size);
         perfectFit(alvo);
@@ -701,11 +758,13 @@ int bloqueia_ponto(void* local, int size){
 
     DataBlock* meio = separa_NO(alvo, local);
     
+    //  Caso o bloco separado seja exatamente do tamanho do ponteiro alvo quer dizer que eles são a mesma coisa
     if (meio->inicioData + meio->size == local + size){
         perfectFit(meio);
         return 1;
     }
 
+    //  Caso contrario separa o bloco mais uma vez
     void* divisor = local + size;
     
     DataBlock* direita = separa_NO(meio, local + size);
@@ -717,10 +776,22 @@ int bloqueia_ponto(void* local, int size){
 };
 
 
+
+int bloqueia_ponto(void* local, int size){
+
+    if (!checaVazios()) return 0;
+    return bloqueia_ponto_AUX(local, size);
+
+};
+
+
+//  Separa um bloco de memoria na posição *separador*, retorna um ponteiro para o novo bloco.
+//  A função não checa a quantidade de blocos vazios, lembre de chamar checaVazios antes
 DataBlock* separa_NO(DataBlock* alvo, void* separador){
     DataBlock* novo = getNoVazio();
     int size = (alvo->inicioData + alvo->size) - separador;
 
+    //  Configurando o novo bloco.
     novo->inicioData = separador;
     novo->size = size;
     novo->estado = alvo->estado;
@@ -729,14 +800,17 @@ DataBlock* separa_NO(DataBlock* alvo, void* separador){
     novo->anteriorTipo = alvo;
     novo->proximoTipo = alvo->proximoTipo;
 
+    //  Caso haja um proximo bloco fisico, então o proximo bloco fisico entende o novo bloco como o novo anterior
     if (novo->proximo){
         novo->proximo->anterior = novo;
     };
 
+    //  Caso haja um anterior bloco fisico, então o anterior bloco fisico entende o novo bloco como o novo proximo
     if (novo->proximoTipo){
         novo->proximoTipo->anteriorTipo = novo;
     }
 
+    //  o bloco antigo agora entende o novo como seu proximo, mantendo assim a coerencia fisica
     alvo->proximo = novo;
     alvo->proximoTipo = novo;
     alvo->size -= size;
@@ -745,49 +819,62 @@ DataBlock* separa_NO(DataBlock* alvo, void* separador){
 
 };
 
-#include <stdio.h>
 
+//  Bloquei uma lista de ponteiros, a lista de tamanhos deve estar em ordem com a lista de ponteiros
 void bloqueia_pontos(void* ponteiros[], int tamanhos[], int quantidade){
 
 
     DataBlock* pivo = Primeiro_Header->listaVazios;
-    DataBlock* retPointer;
-    DataBlock* bloco_lista;
+    DataBlock* retPointer = NULL_MYLLOC;
+    DataBlock* bloco_lista = NULL_MYLLOC;
     int count = 0;
     int flag_novaLista = 0;
     int blocos_usados = 0;
+    int flag_sucesso = 0;
 
+    // contando quantos blocos vazios estão disponiveis
     while (pivo){
         count++;
         pivo = pivo->proximoTipo;
-    }    
+    };
     
-    if ( (quantidade * 2) > count){
+    //  Cada bloqueio pode custar ate 2 blocos novos, alem disso o programa precisa ter pelo menos 2 blocos livres a todo momento para garantir o funcionamento.
+    //  caso não haja blocos o suficiente uma nova lista é criada APENAS para bloquear os ponteiros
+
+    if ( (quantidade * 2 + 2) > count){
         bloco_lista = createNewList_Safeguard(quantidade, ponteiros, tamanhos, &retPointer);
         flag_novaLista = 1;
     }
-
-
+    
+    // bloqueia todos os blocos usando a função bloqueia pontos aux, é necessario usar a função auxiliar pois no final do processo pode existir exatamente
+    // 0 blocos livres, a função bloquei ponto criaria uma nova lista, aqui não é necessario pois o uso de blocos ja foi calculado pela função createNewList_safeguard
     for (int i = 0; i < quantidade; i++){
-        blocos_usados += bloqueia_ponto(ponteiros[i], tamanhos[i]);
+        flag_sucesso = bloqueia_ponto_AUX(ponteiros[i], tamanhos[i]);
+        if (flag_sucesso == -1) return;
+        blocos_usados += flag_sucesso;  //  é importante manter conta dos blocos usados para liberar o espaço extra na nova lista depois
     };
 
-    int blocos_vazios = quantidade * 2 - blocos_usados;
-
-
-
+    //  calculando a diferença entre o espaço alocado para a lista e o usado, o espaço minimo alocado é de 10 blocos
+    int qnt_total = quantidade * 2;
+    if (quantidade < 5) qnt_total = 10;
+    int blocos_vazios = qnt_total - blocos_usados;
+    
+    //  liberando o espaço alocado mas não utilizado, dessa forma o numero de blocos alocados é extamente o necessario
     if (flag_novaLista && retPointer){
         Primeiro_Header->listaVazios = retPointer;
         Primeiro_Header->listaVazios->anteriorTipo = NULL_MYLLOC;
-
+        checaVazios();
+        
         DataBlock* vaziosLivres = separa_NO(bloco_lista, bloco_lista->inicioData + (bloco_lista->size - blocos_vazios * sizeof(DataBlock)));
+                
         myFree(vaziosLivres->inicioData);
-
+        
     }
 
     return;
 }
 
+// troca o metodo de busca
 void change_finder(char finder[]){
     if (finder == 'best'){
         Primeiro_Header->finder = 1;
